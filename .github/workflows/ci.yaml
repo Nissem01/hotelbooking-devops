@@ -58,11 +58,11 @@ jobs:
           cache: "maven"
           cache-dependency-path: hotelbooking/pom.xml
 
-      - name: Starta CustomerService och dess databas
+      - name: Starta CustomerService och dens databas
         working-directory: hotelbooking
         run: docker compose up -d --build customer-service
 
-      - name: Vänta på att allt ska startas
+      - name: Vänta på att grejer startas för säkerhets skull
         run: sleep 30
 
       - name: Test mot vår endpoint i CustomerService
@@ -72,7 +72,7 @@ jobs:
         working-directory: hotelbooking
         run: mvn --batch-mode test
 
-      - name: Stäng ner allt som startats med Compose
+      - name: Stäng ner allting efter vi har kört testerna
         if: always()
         working-directory: hotelbooking
         run: docker compose down -v
