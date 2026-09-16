@@ -1,0 +1,77 @@
+name: ci with integrationtests
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  hotelbookingtests:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        java: [25]
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: hotelbooking
+
+        ports:
+          - 3306:3306
+
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      MYSQL_PASSWORD: root
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/hotelbooking
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      CUSTOMER_SERVICE_BASE_URL: http://localhost:8081
+
+    steps:
+      - name: Checka ut HotelBooking
+        uses: actions/checkout@v4
+        with:
+          path: hotelbooking
+
+      - name: Checka ut CustomerService
+        uses: actions/checkout@v4
+        with:
+          repository: Nissem01/hotelbooking-customerservice-devops
+          ref: master
+          path: CustomerService
+
+      - name: Sätt upp java matrix
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: "temurin"
+          cache: "maven"
+          cache-dependency-path: hotelbooking/pom.xml
+
+      - name: Starta CustomerService och dess databas
+        working-directory: hotelbooking
+        run: docker compose up -d --build customer-service
+
+      - name: Vänta på att allt ska startas
+        run: sleep 30
+
+      - name: Test mot vår endpoint i CustomerService
+        run: curl -f http://localhost:8081/api/customers/1
+
+      - name: Bygg och kör tester
+        working-directory: hotelbooking
+        run: mvn --batch-mode test
+
+      - name: Stäng ner allt som startats med Compose
+        if: always()
+        working-directory: hotelbooking
+        run: docker compose down -v
