@@ -47,7 +47,7 @@ jobs:
         with:
           repository: Nissem01/hotelbooking-customerservice-devops
           ref: master
-          path: CustomerService
+          path: hotelbooking-customerservice
 
       - name: Sätt upp java matrix
         uses: actions/setup-java@v4
