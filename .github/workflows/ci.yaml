@@ -56,7 +56,6 @@ jobs:
           java-version: ${{ matrix.java }}
           distribution: "temurin"
           cache: "maven"
-          cache-dependency-path: hotelbooking/pom.xml
 
       - name: Starta CustomerService och dens databas
         working-directory: hotelbooking
