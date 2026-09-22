@@ -48,7 +48,6 @@ jobs:
           repository: Nissem01/hotelbooking-customerservice-devops
           ref: master
           path: CustomerService
-          token: ${{ secrets.CUSTOMER_REPO_TOKEN }}
 
       - name: Sätt upp java matrix
         uses: actions/setup-java@v4
